@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<meta name="theme-color" content="#0a0c0f"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="GuardDrive"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"/>
+<title>GuardDrive</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0a0c0f;--bg2:#111418;--bg3:#181c22;--bg4:#1e232b;
+  --border:#ffffff12;--border2:#ffffff22;
+  --red:#e03030;--red2:#ff4444;--orange:#e07020;--orange2:#ff8c00;
+  --green:#22c55e;--yellow:#eab308;--blue:#3b82f6;
+  --text:#f0f4f8;--text2:#8892a0;--text3:#3a4250;
+  --font:'Rajdhani',sans-serif;--body:'Inter',sans-serif;
+  --r:14px;--rs:10px;
+}
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--body);font-size:14px}
+.app{display:flex;flex-direction:column;height:100dvh;max-width:430px;margin:0 auto;background:var(--bg)}
+
+/* NAV */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 10px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;z-index:60}
+.logo{font-family:var(--font);font-size:22px;font-weight:700;letter-spacing:1px;color:var(--text)}
+.logo em{color:var(--red);font-style:normal}
+.topbar-right{display:flex;align-items:center;gap:11px}
+.icon-btn{position:relative;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px}
+.icon-btn svg{width:19px;height:19px;stroke:var(--text2);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.badge{position:absolute;top:2px;right:2px;background:var(--red);color:#fff;font-size:9px;font-weight:700;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;display:none}
+.badge.on{display:flex}
+.av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--orange));display:flex;align-items:center;justify-content:center;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;border:2px solid var(--border2);color:#fff}
+
+.pages{flex:1;overflow:hidden;position:relative}
+.page{position:absolute;inset:0;overflow-y:auto;padding:13px 13px 72px;display:flex;flex-direction:column;gap:12px;opacity:0;pointer-events:none;transition:opacity .18s}
+.page.on{opacity:1;pointer-events:all}
+.page::-webkit-scrollbar{width:2px}
+.page::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+.botnav{display:flex;background:var(--bg2);border-top:1px solid var(--border);flex-shrink:0;z-index:60}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px 7px;cursor:pointer;gap:3px;color:var(--text3);transition:color .2s;min-height:52px}
+.bn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.bn span{font-size:10px;font-weight:500;letter-spacing:.3px}
+.bn.on{color:var(--red)}
+
+/* CARDS */
+.card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+.ctitle{font-family:var(--font);font-size:15px;font-weight:600;letter-spacing:.4px;margin-bottom:11px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.csub{font-size:11px;font-weight:400;color:var(--text2);font-family:var(--body);letter-spacing:0}
+
+/* CAMERA CARD */
+.cam-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;position:relative}
+.cam-inner{position:relative;width:100%;aspect-ratio:4/3;background:#000;overflow:hidden}
+#video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:block}
+#overlay{position:absolute;inset:0;transform:scaleX(-1)}
+.cam-hud{position:absolute;inset:0;pointer-events:none}
+.hud-ear{position:absolute;top:10px;left:10px;background:#000a;padding:4px 10px;border-radius:6px;font-family:var(--font);font-size:15px;font-weight:700;color:#fff;letter-spacing:.5px}
+.hud-mar{position:absolute;top:10px;right:10px;background:#000a;padding:4px 10px;border-radius:6px;font-family:var(--font);font-size:15px;font-weight:700;color:#fff;letter-spacing:.5px}
+.hud-alert{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:var(--red);padding:6px 16px;border-radius:20px;font-family:var(--font);font-size:14px;font-weight:700;color:#fff;letter-spacing:.5px;white-space:nowrap;display:none}
+.hud-alert.on{display:block;animation:alertpulse .6s infinite alternate}
+@keyframes alertpulse{from{opacity:1}to{opacity:.5}}
+.cam-footer{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+
+/* PILL */
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500;flex-shrink:0}
+.pill .dot{width:6px;height:6px;border-radius:50%}
+.pill.safe{background:#22c55e15;color:var(--green);border:1px solid #22c55e28}.pill.safe .dot{background:var(--green);animation:bk 1.8s infinite}
+.pill.warn{background:#eab30815;color:var(--yellow);border:1px solid #eab30828}.pill.warn .dot{background:var(--yellow);animation:bk .9s infinite}
+.pill.danger{background:#e0303015;color:var(--red2);border:1px solid #e0303028}.pill.danger .dot{background:var(--red2);animation:bk .4s infinite}
+.pill.idle{background:var(--bg4);color:var(--text2);border:1px solid var(--border)}
+@keyframes bk{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* START BTN */
+.startbtn{width:100%;padding:13px;border:none;border-radius:var(--rs);font-family:var(--font);font-size:17px;font-weight:700;letter-spacing:.8px;cursor:pointer;transition:opacity .2s,background .3s;color:#fff}
+.startbtn.start{background:linear-gradient(135deg,var(--red),var(--orange))}
+.startbtn.stop{background:var(--bg4);border:1px solid var(--border2);color:var(--text2)}
+.startbtn:hover{opacity:.88}
+
+/* RING */
+.ring-wrap{display:flex;justify-content:center;padding:4px 0 2px;position:relative}
+.ring-wrap svg{transform:rotate(-90deg)}
+.ring-lbl{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-lbl .rv{font-family:var(--font);font-size:36px;font-weight:700;line-height:1;transition:color .3s}
+.ring-lbl .rl{font-size:11px;color:var(--text2);margin-top:2px;letter-spacing:.4px}
+
+/* CHIPS */
+.chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:500;background:var(--bg4);border:1px solid var(--border);color:var(--text2);transition:all .2s}
+.chip.red{background:#e0303015;border-color:#e0303028;color:var(--red2)}
+.chip.yel{background:#eab30815;border-color:#eab30828;color:var(--yellow)}
+.chip.grn{background:#22c55e15;border-color:#22c55e28;color:var(--green)}
+
+/* METRICS */
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.met{background:var(--bg4);border-radius:var(--rs);padding:11px 12px}
+.met .mv{font-family:var(--font);font-size:23px;font-weight:700;line-height:1;transition:color .3s}
+.met .ml{font-size:11px;color:var(--text2);margin-top:3px}
+.met .mb{height:3px;background:var(--border);border-radius:2px;margin-top:8px;overflow:hidden}
+.met .mf{height:100%;border-radius:2px;transition:width .4s,background .3s}
+
+/* SESSION ROW */
+.sess{display:flex;gap:8px}
+.si{flex:1;background:var(--bg4);border-radius:var(--rs);padding:10px;text-align:center}
+.si .sv{font-family:var(--font);font-size:17px;font-weight:700}
+.si .sl{font-size:10px;color:var(--text2);margin-top:2px}
+
+/* ALERT BANNER */
+.abanner{background:linear-gradient(135deg,#e0303018,#e0700018);border:1px solid #e0303030;border-radius:var(--r);padding:12px 14px;align-items:center;gap:11px;display:none}
+.abanner.on{display:flex;animation:flashbg 1s infinite alternate}
+@keyframes flashbg{from{border-color:#e0303040}to{border-color:#e0303010}}
+.aico{width:36px;height:36px;border-radius:50%;background:#e0303022;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.aico svg{width:17px;height:17px;stroke:var(--red2);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* CHART */
+.chwrap{height:70px;position:relative}
+.chwrap canvas{width:100%!important}
+
+/* SETTINGS */
+.srow{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.srow:last-child{border-bottom:none}
+.slb{font-size:13px;font-weight:500}
+.ssb{font-size:11px;color:var(--text2);margin-top:2px}
+.sval{font-family:var(--font);font-size:17px;font-weight:700;color:var(--orange2);min-width:65px;text-align:right;flex-shrink:0}
+input[type=range]{-webkit-appearance:none;width:100%;height:4px;background:var(--border2);border-radius:2px;outline:none;margin:7px 0 3px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:19px;height:19px;border-radius:50%;background:var(--orange2);cursor:pointer;border:2px solid var(--bg)}
+.tog{width:44px;height:25px;background:var(--border2);border-radius:13px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.tog.on{background:var(--red)}
+.tog::after{content:'';position:absolute;top:3.5px;left:3.5px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px #0005}
+.tog.on::after{transform:translateX(19px)}
+select{background:var(--bg4);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:6px 10px;font-size:12px;outline:none;font-family:var(--body)}
+input[type=text],input[type=tel]{background:var(--bg4);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:8px 11px;font-size:13px;outline:none;width:100%;font-family:var(--body);margin-top:6px}
+input[type=text]:focus,input[type=tel]:focus{border-color:var(--orange2)}
+
+/* PROFILE */
+.ph{display:flex;align-items:center;gap:13px;padding-bottom:12px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.pa{width:62px;height:62px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--orange));display:flex;align-items:center;justify-content:center;font-family:var(--font);font-size:25px;font-weight:700;flex-shrink:0;border:3px solid var(--border2);color:#fff}
+.pn{font-family:var(--font);font-size:20px;font-weight:700}
+.ps{font-size:12px;color:var(--text2);margin-top:3px}
+.pe{font-size:11px;color:var(--orange2);margin-top:5px;cursor:pointer}
+.irow{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+.irow:last-child{border-bottom:none}
+.ik{font-size:12px;color:var(--text2)}
+.iv{font-size:13px;font-weight:500}
+.emcard{background:linear-gradient(135deg,#e0303010,#e0700010);border:1px solid #e0303022;border-radius:12px;padding:13px}
+.emtitle{font-family:var(--font);font-size:14px;font-weight:600;color:var(--red2);margin-bottom:9px;display:flex;align-items:center;gap:5px}
+.emtitle svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.streak{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#22c55e10,#14b8a610);border:1px solid #22c55e22;border-radius:10px;padding:10px 13px}
+.streak svg{width:18px;height:18px;stroke:var(--green);fill:none;stroke-width:2;flex-shrink:0}
+
+/* LOGS */
+.logitem{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px solid var(--border)}
+.logitem:last-child{border-bottom:none}
+.ldot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.ltype{font-size:13px;font-weight:500}
+.lmeta{font-size:11px;color:var(--text2);margin-top:2px}
+.ltag{display:inline-block;font-size:10px;padding:2px 7px;border-radius:6px;margin-top:3px;font-weight:600}
+.frow{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:11px}
+.fc{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;background:var(--bg4);border:1px solid var(--border);color:var(--text2);transition:all .2s}
+.fc.on{background:#e0303015;border-color:#e0303028;color:var(--red2)}
+
+/* HELP */
+.hitem{display:flex;gap:9px;padding:9px 0;border-bottom:1px solid var(--border)}
+.hitem:last-child{border-bottom:none}
+.hnum{width:24px;height:24px;border-radius:6px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-family:var(--font);font-size:13px;font-weight:700;color:var(--orange2);flex-shrink:0;margin-top:1px}
+.htit{font-size:13px;font-weight:500;margin-bottom:3px}
+.hbod{font-size:11px;color:var(--text2);line-height:1.55}
+
+/* BTN */
+.btn{width:100%;padding:12px;border:none;border-radius:var(--rs);font-family:var(--font);font-size:16px;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:opacity .2s;color:#fff}
+.btn.pri{background:linear-gradient(135deg,var(--red),var(--orange))}
+.btn.sec{background:var(--bg4);border:1px solid var(--border2);color:var(--text2)}
+.btn:hover{opacity:.88}
+
+.shdr{font-family:var(--font);font-size:11px;font-weight:600;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:5px}
+
+/* PERMISSION SCREEN */
+.permscreen{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:30px 20px;text-align:center;height:100%}
+.permico{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--orange));display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+.permico svg{width:32px;height:32px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.permtitle{font-family:var(--font);font-size:24px;font-weight:700}
+.permsub{font-size:13px;color:var(--text2);line-height:1.6;max-width:280px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="logo">Guard<em>Drive</em></div>
+    <div class="topbar-right">
+      <div class="icon-btn" onclick="goPage('logs')">
+        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="badge on" id="notifBadge">0</div>
+      </div>
+      <div class="av" id="topAvatar" onclick="goPage('profile')">SS</div>
+    </div>
+  </div>
+
+  <!-- PAGES -->
+  <div class="pages">
+
+    <!-- ══ DASHBOARD ══ -->
+    <div class="page on" id="pg-dashboard">
+
+      <!-- Alert banner -->
+      <div class="abanner" id="alertBanner">
+        <div class="aico"><svg viewBox="0 0 24 24"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+        <div>
+          <div style="font-family:var(--font);font-size:15px;font-weight:700;color:var(--red2)">DROWSINESS DETECTED</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px" id="alertSub">Eyes closed — stay alert!</div>
+        </div>
+      </div>
+
+      <!-- Camera feed -->
+      <div class="cam-card">
+        <div class="cam-inner">
+          <video id="video" autoplay muted playsinline></video>
+          <canvas id="overlay"></canvas>
+          <div class="cam-hud">
+            <div class="hud-ear" id="hudEAR">EAR: —</div>
+            <div class="hud-mar" id="hudMAR">MAR: —</div>
+            <div class="hud-alert" id="hudAlert">⚠ DROWSY</div>
+          </div>
+        </div>
+        <div class="cam-footer">
+          <div id="statusPill"><span class="pill idle"><span class="dot"></span>Camera off</span></div>
+          <div style="font-size:11px;color:var(--text2)" id="closedTimer"></div>
+        </div>
+      </div>
+
+      <!-- EAR ring + chips -->
+      <div class="card">
+        <div class="ctitle">Live Detection <span class="csub" id="faceStatus">No face detected</span></div>
+        <div class="ring-wrap">
+          <svg width="150" height="150" viewBox="0 0 150 150">
+            <circle cx="75" cy="75" r="60" fill="none" stroke="#ffffff07" stroke-width="11"/>
+            <circle id="earRing" cx="75" cy="75" r="60" fill="none" stroke="var(--green)" stroke-width="11"
+              stroke-linecap="round" stroke-dasharray="377" stroke-dashoffset="75"
+              style="transition:stroke-dashoffset .35s,stroke .35s"/>
+          </svg>
+          <div class="ring-lbl">
+            <div class="rv" id="earDisp" style="color:var(--green)">—</div>
+            <div class="rl">EAR</div>
+          </div>
+        </div>
+        <div class="chips">
+          <div class="chip" id="eyeChip">👁 Eyes —</div>
+          <div class="chip" id="yawnChip">😐 Mouth —</div>
+          <div class="chip" id="speedChip">📍 GPS —</div>
+        </div>
+      </div>
+
+      <!-- Metrics -->
+      <div class="metrics">
+        <div class="met"><div class="mv" id="marDisp" style="color:var(--blue)">—</div><div class="ml">MAR (Yawn)</div><div class="mb"><div class="mf" id="marFill" style="width:0%;background:var(--blue)"></div></div></div>
+        <div class="met"><div class="mv" id="spdDisp" style="color:var(--orange2)">—</div><div class="ml">Speed km/h</div><div class="mb"><div class="mf" id="spdFill" style="width:0%;background:var(--orange2)"></div></div></div>
+        <div class="met"><div class="mv" id="alertsDisp" style="color:var(--yellow)">0</div><div class="ml">Alerts Today</div><div class="mb"><div class="mf" id="alertsFill" style="width:0%;background:var(--yellow)"></div></div></div>
+        <div class="met"><div class="mv" id="scoreDisp" style="color:var(--green)">100</div><div class="ml">Safety Score</div><div class="mb"><div class="mf" id="scoreFill" style="width:100%;background:var(--green)"></div></div></div>
+      </div>
+
+      <!-- EAR chart -->
+      <div class="card">
+        <div class="ctitle">EAR Trend <span class="csub">live</span></div>
+        <div class="chwrap"><canvas id="earChart" role="img" aria-label="Live EAR trend">EAR trend</canvas></div>
+      </div>
+
+      <!-- Session -->
+      <div class="sess">
+        <div class="si"><div class="sv" id="sessTime" style="color:var(--blue)">00:00</div><div class="sl">Session</div></div>
+        <div class="si"><div class="sv" id="yawnCount" style="color:var(--yellow)">0</div><div class="sl">Yawns</div></div>
+        <div class="si"><div class="sv" id="sessScore" style="color:var(--green)">100</div><div class="sl">Score</div></div>
+      </div>
+
+      <!-- Start/Stop -->
+      <button class="startbtn start" id="startBtn" onclick="toggleDetection()">START MONITORING</button>
+    </div>
+
+    <!-- ══ LOGS ══ -->
+    <div class="page" id="pg-logs">
+      <div class="card">
+        <div class="ctitle">Alert History <span class="csub" id="logCount">0 events</span></div>
+        <div class="frow" id="filterRow">
+          <div class="fc on" onclick="filterLogs('all',this)">All</div>
+          <div class="fc" onclick="filterLogs('DROWSINESS',this)">Drowsy</div>
+          <div class="fc" onclick="filterLogs('YAWN',this)">Yawn</div>
+          <div class="fc" onclick="filterLogs('SPEED',this)">Speed</div>
+        </div>
+        <div id="logList"><div style="color:var(--text2);font-size:12px;text-align:center;padding:18px 0">No events yet — start monitoring</div></div>
+      </div>
+      <button class="btn sec" onclick="if(confirm('Clear all logs?')){logs=[];renderLogs();saveLogs()}">Clear Logs</button>
+    </div>
+
+    <!-- ══ SETTINGS ══ -->
+    <div class="page" id="pg-settings">
+      <div class="card">
+        <div class="ctitle">Detection Thresholds</div>
+        <div class="srow"><div><div class="slb">EAR Threshold</div><div class="ssb">Eye closed below this value</div></div><div class="sval" id="earTD">0.40</div></div>
+        <input type="range" id="earT" min="20" max="55" value="40" step="1" oninput="setSetting(this,'earT')"/>
+        <div class="srow"><div><div class="slb">MAR Threshold</div><div class="ssb">Yawn detected above this</div></div><div class="sval" id="marTD">0.60</div></div>
+        <input type="range" id="marT" min="40" max="85" value="60" step="1" oninput="setSetting(this,'marT')"/>
+        <div class="srow"><div><div class="slb">Drowsy Timer</div><div class="ssb">Seconds before alarm fires</div></div><div class="sval" id="drowsyD">10s</div></div>
+        <input type="range" id="drowsyT" min="3" max="20" value="10" step="1" oninput="setSetting(this,'drowsyT')"/>
+        <div class="srow"><div><div class="slb">Yawn Duration</div><div class="ssb">Min seconds to log a yawn</div></div><div class="sval" id="yawnD">2s</div></div>
+        <input type="range" id="yawnT" min="1" max="5" value="2" step="1" oninput="setSetting(this,'yawnT')"/>
+      </div>
+      <div class="card">
+        <div class="ctitle">Speed Limit</div>
+        <div class="srow"><div><div class="slb">Alert Speed</div><div class="ssb">Log event when exceeded</div></div><div class="sval" id="spdLD">60 km/h</div></div>
+        <input type="range" id="spdL" min="20" max="140" value="60" step="5" oninput="setSetting(this,'spdL')"/>
+      </div>
+      <div class="card">
+        <div class="ctitle">Alerts</div>
+        <div class="srow"><div><div class="slb">Sound Alarm</div><div class="ssb">Beep on drowsiness</div></div><div class="tog on" id="tAlarm" onclick="this.classList.toggle('on');saveSettings()"></div></div>
+        <div class="srow"><div><div class="slb">Vibrate</div><div class="ssb">Vibrate phone on alert</div></div><div class="tog on" id="tVibe" onclick="this.classList.toggle('on');saveSettings()"></div></div>
+        <div class="srow"><div><div class="slb">Screen Flash</div><div class="ssb">Red flash on drowsiness</div></div><div class="tog on" id="tFlash" onclick="this.classList.toggle('on');saveSettings()"></div></div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Emergency Contact</div>
+        <div class="ssb" style="margin-bottom:6px">Called via Twilio when eyes closed 10+ seconds</div>
+        <div class="srow"><div><div class="slb">Enable Emergency Call</div></div><div class="tog" id="tEmCall" onclick="this.classList.toggle('on');saveSettings()"></div></div>
+        <div style="margin-top:8px">
+          <div class="shdr">Contact Name</div>
+          <input type="text" id="emName" placeholder="e.g. Dad" oninput="saveSettings()"/>
+          <div class="shdr" style="margin-top:10px">Phone Number</div>
+          <input type="tel" id="emPhone" placeholder="+91XXXXXXXXXX" oninput="saveSettings()"/>
+          <div class="shdr" style="margin-top:10px">Twilio Account SID</div>
+          <input type="text" id="twSID" placeholder="ACxxxxxxxxxxxxxxxx" oninput="saveSettings()"/>
+          <div class="shdr" style="margin-top:10px">Twilio Auth Token</div>
+          <input type="text" id="twToken" placeholder="your_auth_token" oninput="saveSettings()"/>
+          <div class="shdr" style="margin-top:10px">Twilio From Number</div>
+          <input type="tel" id="twFrom" placeholder="+1XXXXXXXXXX" oninput="saveSettings()"/>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Camera</div>
+        <div class="srow">
+          <div><div class="slb">Camera</div><div class="ssb">Front recommended for driving</div></div>
+          <select id="camSel" onchange="saveSettings()">
+            <option value="user">Front Camera</option>
+            <option value="environment">Rear Camera</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn pri" onclick="saveSettings();alert('Settings saved!')">SAVE SETTINGS</button>
+    </div>
+
+    <!-- ══ PROFILE ══ -->
+    <div class="page" id="pg-profile">
+      <div class="card">
+        <div class="ph">
+          <div class="pa" id="profAvatar" style="overflow:hidden;padding:0;background:linear-gradient(135deg,var(--red),var(--orange))">
+            <img id="profAvatarImg" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%"/>
+            <span id="profAvatarInitials">SS</span>
+          </div>
+          <div>
+            <div class="pn" id="profName">Shriyaansh Shukla</div>
+            <div class="ps" id="profId">Driver ID: GD-2025-0821</div>
+            <div class="pe" onclick="openEditModal()">✏️ Edit Profile →</div>
+          </div>
+        </div>
+        <div class="sess" style="margin-bottom:0">
+          <div class="si"><div class="sv" id="profScore" style="color:var(--green);font-size:20px">100</div><div class="sl">Avg Score</div></div>
+          <div class="si"><div class="sv" id="profTrips" style="color:var(--blue);font-size:20px">0</div><div class="sl">Sessions</div></div>
+          <div class="si"><div class="sv" id="profYawns" style="color:var(--yellow);font-size:20px">0</div><div class="sl">Total Yawns</div></div>
+        </div>
+      </div>
+
+      <div class="streak">
+        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <div>
+          <div style="font-family:var(--font);font-size:15px;font-weight:600;color:var(--green)" id="streakText">Start your first session!</div>
+          <div style="font-size:11px;color:var(--text2)" id="streakSub">Drive safely to build your streak</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ctitle">Car Details <span class="csub" style="cursor:pointer;color:var(--orange2)" onclick="openEditModal()">edit</span></div>
+        <div class="irow"><span class="ik">Make & Model</span><span class="iv" id="carModel">Maruti Swift VXI</span></div>
+        <div class="irow"><span class="ik">Year</span><span class="iv" id="carYear">2022</span></div>
+        <div class="irow"><span class="ik">Reg. Number</span><span class="iv" id="carReg">HP 00 AA 0000</span></div>
+        <div class="irow"><span class="ik">Aadhaar</span><span class="iv" id="aadharDisp" style="letter-spacing:1px">Not set</span></div>
+        <div class="irow"><span class="ik">Avg Speed</span><span class="iv" id="avgSpdDisp">— km/h</span></div>
+        <div class="irow"><span class="ik">Max Recorded</span><span class="iv" id="maxSpdDisp">— km/h</span></div>
+        <div class="irow" style="border:none"><span class="ik">Total Alerts</span><span class="iv" id="totalAlertsDisp">0</span></div>
+      </div>
+
+      <div class="emcard">
+        <div class="emtitle">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.62 3.41 2 2 0 0 1 3.6 1.25h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.94a16 16 0 0 0 5.55 5.55l.96-.96a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21 16.92z"/></svg>
+          Emergency Contact
+        </div>
+        <div class="irow" style="padding:6px 0"><span class="ik">Name</span><span class="iv" id="emNameDisp">Not set</span></div>
+        <div class="irow" style="padding:6px 0;border:none"><span class="ik">Number</span><span class="iv" style="color:var(--red2)" id="emPhoneDisp">Not set</span></div>
+      </div>
+
+      <div class="card">
+        <div class="ctitle">Weekly Safety Score</div>
+        <div style="height:85px;position:relative"><canvas id="weekChart" role="img" aria-label="Weekly safety scores">Weekly scores</canvas></div>
+      </div>
+
+      <div class="card">
+        <div class="ctitle">Help & Guide</div>
+        <div class="hitem"><div class="hnum">1</div><div><div class="htit">Mount your phone on the dashboard</div><div class="hbod">Use a phone mount so the front camera faces your face directly. Both eyes must be clearly visible. Avoid dark environments or harsh backlighting.</div></div></div>
+        <div class="hitem"><div class="hnum">2</div><div><div class="htit">Calibrate EAR for your face</div><div class="hbod">If you get too many false alarms, increase the EAR threshold in Settings. If drowsiness isn't caught, lower it. Default 0.40 suits most faces.</div></div></div>
+        <div class="hitem"><div class="hnum">3</div><div><div class="htit">Emergency calls via Twilio</div><div class="hbod">Sign up free at twilio.com. Enter your Account SID, Auth Token and From Number in Settings. The app will auto-call when eyes close for 10+ seconds.</div></div></div>
+        <div class="hitem"><div class="hnum">4</div><div><div class="htit">GPS speed tracking</div><div class="hbod">Allow location permission when prompted. The app reads your real GPS speed. Set your custom speed limit in Settings to log exceeded events.</div></div></div>
+        <div class="hitem"><div class="hnum">5</div><div><div class="htit">Install as an app</div><div class="hbod">In Chrome: tap the three-dot menu → "Add to Home Screen". On Safari (iPhone): tap Share → "Add to Home Screen". Works fully offline once installed.</div></div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="botnav">
+    <div class="bn on" id="nav-dashboard" onclick="goPage('dashboard')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span>Dashboard</span>
+    </div>
+    <div class="bn" id="nav-logs" onclick="goPage('logs')">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span>Logs</span>
+    </div>
+    <div class="bn" id="nav-settings" onclick="goPage('settings')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06-.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>Settings</span>
+    </div>
+    <div class="bn" id="nav-profile" onclick="goPage('profile')">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Profile</span>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- MediaPipe via CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+
+<script>
+// ══════════════════════════════════════════
+//  SETTINGS  (mirrored from your Python code)
+// ══════════════════════════════════════════
+const S = {
+  earThreshold:    0.40,
+  marThreshold:    0.60,
+  drowsySecs:      10,
+  yawnSecs:        2,
+  speedLimit:      60,
+  alarmEnabled:    true,
+  vibeEnabled:     true,
+  flashEnabled:    true,
+  emCallEnabled:   false,
+  emName:          '',
+  emPhone:         '',
+  twSID:           '',
+  twToken:         '',
+  twFrom:          '',
+  camera:          'user',
+};
+
+// ══════════════════════════════════════════
+//  EYE / MOUTH LANDMARK INDICES
+//  (same as your Python code)
+// ══════════════════════════════════════════
+const LEFT_EYE  = [33,160,158,133,153,144];
+const RIGHT_EYE = [362,385,387,263,373,380];
+// Mouth: top-centre=13, bottom-centre=14, left=78, right=308, extra pair 82/87
+const MOUTH = { top:13, bot:14, left:78, right:308, t1:82, b1:87 };
+
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+let running = false;
+let sessionStart = null;
+let eyeClosedStart = null;
+let yawnStart = null;
+let emergencyCalled = false;
+let alarmPlaying = false;
+let alertsToday = 0;
+let yawnsToday = 0;
+let safetyScore = 100;
+let speedSamples = [];
+let maxSpeed = 0;
+let sessionCount = 0;
+let totalYawns = 0;
+let totalAlerts = 0;
+const earHistory = new Array(50).fill(null);
+let logFilter = 'all';
+let faceMesh = null;
+let camera = null;
+let videoStream = null;
+let gpsWatcher = null;
+let currentSpeed = 0;
+let speedAlerted = false;
+
+// ══════════════════════════════════════════
+//  LOGS (persisted in localStorage)
+// ══════════════════════════════════════════
+let logs = JSON.parse(localStorage.getItem('gd_logs') || '[]');
+function saveLogs(){ try{ localStorage.setItem('gd_logs', JSON.stringify(logs.slice(0,200))); }catch(_){} }
+function addLog(type, details){
+  const t = new Date().toLocaleString('en-IN',{hour12:false,hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'});
+  logs.unshift({type, details, time:t});
+  saveLogs();
+  renderLogs();
+  const b = document.getElementById('notifBadge');
+  b.textContent = logs.length > 99 ? '99+' : logs.length;
+  b.classList.add('on');
+}
+
+// ══════════════════════════════════════════
+//  DISTANCE HELPER
+// ══════════════════════════════════════════
+function dist(a, b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+
+// ══════════════════════════════════════════
+//  EAR CALCULATION  (same formula as Python)
+// ══════════════════════════════════════════
+function calcEAR(lms, indices){
+  const pts = indices.map(i=>lms[i]);
+  const [p0,p1,p2,p3,p4,p5] = pts;
+  const A = dist(p1,p5);
+  const B = dist(p2,p4);
+  const C = dist(p0,p3);
+  if(C===0) return 0;
+  return (A+B)/(2*C);
+}
+
+// ══════════════════════════════════════════
+//  MAR CALCULATION  (same formula, mouth landmarks)
+// ══════════════════════════════════════════
+function calcMAR(lms){
+  const top  = lms[MOUTH.top];
+  const bot  = lms[MOUTH.bot];
+  const left = lms[MOUTH.left];
+  const right= lms[MOUTH.right];
+  const t1   = lms[MOUTH.t1];
+  const b1   = lms[MOUTH.b1];
+  const A = dist(top,  bot);
+  const B = dist(t1,   b1);
+  const C = dist(left, right);
+  if(C===0) return 0;
+  return (A+B)/(2*C);
+}
+
+// ══════════════════════════════════════════
+//  AUDIO ALARM  (Web Audio API — no file needed)
+// ══════════════════════════════════════════
+let audioCtx = null;
+let alarmInterval = null;
+
+function startAlarm(){
+  if(alarmPlaying) return;
+  alarmPlaying = true;
+  if(!S.alarmEnabled) return;
+  try{
+    audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+    function beep(){
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.type='square'; osc.frequency.value=880;
+      gain.gain.setValueAtTime(0.6,audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.4);
+      osc.start(); osc.stop(audioCtx.currentTime+0.4);
+    }
+    beep();
+    alarmInterval = setInterval(beep, 700);
+  }catch(_){}
+  if(S.vibeEnabled && navigator.vibrate) navigator.vibrate([300,100,300,100,300]);
+  if(S.flashEnabled) flashScreen();
+}
+
+function stopAlarm(){
+  alarmPlaying = false;
+  if(alarmInterval){ clearInterval(alarmInterval); alarmInterval=null; }
+  if(S.vibeEnabled && navigator.vibrate) navigator.vibrate(0);
+}
+
+function flashScreen(){
+  const fl = document.createElement('div');
+  fl.style.cssText='position:fixed;inset:0;background:rgba(220,30,30,0.35);z-index:9999;pointer-events:none;animation:flashfade .6s forwards';
+  if(!document.getElementById('flashStyle')){
+    const st=document.createElement('style');
+    st.id='flashStyle';
+    st.textContent='@keyframes flashfade{0%{opacity:1}100%{opacity:0}}';
+    document.head.appendChild(st);
+  }
+  document.body.appendChild(fl);
+  setTimeout(()=>fl.remove(),700);
+}
+
+// ══════════════════════════════════════════
+//  EMERGENCY CALL (Twilio REST API)
+// ══════════════════════════════════════════
+function triggerEmergencyCall(reason){
+  if(!S.emCallEnabled||!S.twSID||!S.twToken||!S.twFrom||!S.emPhone){
+    addLog('EMERGENCY_PLACEHOLDER', `Would call ${S.emPhone||'(not set)'}: ${reason}`);
+    return;
+  }
+  const twiml = `<Response><Say>GuardDrive alert. ${reason}</Say></Response>`;
+  const body = new URLSearchParams({
+    To: S.emPhone, From: S.twFrom,
+    Twiml: twiml
+  });
+  fetch(`https://api.twilio.com/2010-04-01/Accounts/${S.twSID}/Calls.json`,{
+    method:'POST',
+    headers:{
+      'Authorization':'Basic '+btoa(S.twSID+':'+S.twToken),
+      'Content-Type':'application/x-www-form-urlencoded'
+    },
+    body
+  })
+  .then(r=>r.json())
+  .then(d=>addLog('EMERGENCY_CALL',`SID=${d.sid||'error'} To=${S.emPhone}`))
+  .catch(e=>addLog('EMERGENCY_CALL_ERROR',e.message));
+}
+
+// ══════════════════════════════════════════
+//  GPS SPEED
+// ══════════════════════════════════════════
+function startGPS(){
+  if(!navigator.geolocation) return;
+  gpsWatcher = navigator.geolocation.watchPosition(
+    pos=>{
+      const mps = pos.coords.speed || 0;
+      currentSpeed = mps * 3.6; // m/s → km/h
+      if(currentSpeed > maxSpeed){ maxSpeed = currentSpeed; }
+      speedSamples.push(currentSpeed);
+      if(currentSpeed > S.speedLimit && !speedAlerted){
+        speedAlerted = true;
+        addLog('SPEED', `${currentSpeed.toFixed(1)} km/h exceeded limit ${S.speedLimit} km/h`);
+        alertsToday++;
+        safetyScore = Math.max(0, safetyScore-5);
+      } else if(currentSpeed <= S.speedLimit){
+        speedAlerted = false;
+      }
+    },
+    ()=>{},
+    {enableHighAccuracy:true,maximumAge:1000,timeout:5000}
+  );
+}
+function stopGPS(){
+  if(gpsWatcher!==null){ navigator.geolocation.clearWatch(gpsWatcher); gpsWatcher=null; }
+}
+
+// ══════════════════════════════════════════
+//  FACE MESH PROCESSING
+// ══════════════════════════════════════════
+function onResults(results){
+  if(!running) return;
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('overlay');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const now = Date.now()/1000;
+
+  if(!results.multiFaceLandmarks || results.multiFaceLandmarks.length===0){
+    updateUI(null, null);
+    document.getElementById('faceStatus').textContent='No face detected';
+    return;
+  }
+
+  const lms = results.multiFaceLandmarks[0];
+  document.getElementById('faceStatus').textContent='Face detected';
+
+  // Draw eye dots
+  const W=canvas.width, H=canvas.height;
+  [...LEFT_EYE,...RIGHT_EYE].forEach(i=>{
+    const l=lms[i];
+    ctx.beginPath();
+    ctx.arc(l.x*W, l.y*H, 2, 0, Math.PI*2);
+    ctx.fillStyle='#22c55e';
+    ctx.fill();
+  });
+
+  const ear = (calcEAR(lms, LEFT_EYE) + calcEAR(lms, RIGHT_EYE)) / 2;
+  const mar = calcMAR(lms);
+
+  // ── DROWSINESS LOGIC ──
+  if(ear < S.earThreshold){
+    if(eyeClosedStart===null){ eyeClosedStart=now; emergencyCalled=false; }
+    const closed = now - eyeClosedStart;
+
+    if(closed >= S.drowsySecs){
+      startAlarm();
+      document.getElementById('alertBanner').classList.add('on');
+      document.getElementById('alertSub').textContent=`Eyes closed ${closed.toFixed(1)}s — stay alert!`;
+      document.getElementById('hudAlert').classList.add('on');
+      if(!emergencyCalled){
+        emergencyCalled = true;
+        alertsToday++;
+        safetyScore = Math.max(0, safetyScore-10);
+        addLog('DROWSINESS', `Eyes closed ${closed.toFixed(1)}s, EAR=${ear.toFixed(2)}`);
+        if(S.emCallEnabled){
+          triggerEmergencyCall(`Eyes closed for ${closed.toFixed(1)} seconds.`);
+        }
+      }
+    }
+    document.getElementById('closedTimer').textContent=`Closed: ${(now-eyeClosedStart).toFixed(1)}s`;
+  } else {
+    eyeClosedStart = null;
+    emergencyCalled = false;
+    stopAlarm();
+    document.getElementById('alertBanner').classList.remove('on');
+    document.getElementById('hudAlert').classList.remove('on');
+    document.getElementById('closedTimer').textContent='';
+  }
+
+  // ── YAWN LOGIC ──
+  if(mar > S.marThreshold){
+    if(yawnStart===null) yawnStart=now;
+    if((now-yawnStart) >= S.yawnSecs && yawnStart!==null){
+      yawnsToday++;
+      totalYawns++;
+      safetyScore = Math.max(0, safetyScore-3);
+      addLog('YAWN', `MAR=${mar.toFixed(2)}, duration=${(now-yawnStart).toFixed(1)}s`);
+      yawnStart = null;
+    }
+  } else {
+    yawnStart = null;
+  }
+
+  updateUI(ear, mar);
+}
+
+// ══════════════════════════════════════════
+//  UI UPDATE
+// ══════════════════════════════════════════
+function updateUI(ear, mar){
+  // EAR ring
+  const earColor = ear===null?'#3a4250':ear<S.earThreshold?'#ff4444':ear<(S.earThreshold+0.1)?'#eab308':'#22c55e';
+  const earPct = ear===null?0:Math.max(0,Math.min(1,(ear-0.1)/0.7));
+  document.getElementById('earRing').style.strokeDashoffset = 377*(1-earPct);
+  document.getElementById('earRing').style.stroke = earColor;
+  document.getElementById('earDisp').textContent = ear!==null?ear.toFixed(2):'—';
+  document.getElementById('earDisp').style.color = earColor;
+  document.getElementById('hudEAR').textContent = ear!==null?`EAR: ${ear.toFixed(2)}`:'EAR: —';
+
+  // MAR
+  if(mar!==null){
+    document.getElementById('marDisp').textContent = mar.toFixed(2);
+    document.getElementById('marFill').style.width = Math.min(100,mar*100)+'%';
+    document.getElementById('marFill').style.background = mar>S.marThreshold?'#eab308':'#3b82f6';
+    document.getElementById('hudMAR').textContent = `MAR: ${mar.toFixed(2)}`;
+  }
+
+  // Speed
+  const spd = currentSpeed;
+  document.getElementById('spdDisp').textContent = spd>0?Math.round(spd):'—';
+  document.getElementById('spdFill').style.width = Math.min(100,spd/140*100)+'%';
+  document.getElementById('spdFill').style.background = spd>S.speedLimit?'#ff4444':'#ff8c00';
+
+  // Alerts + score
+  document.getElementById('alertsDisp').textContent = alertsToday;
+  document.getElementById('alertsFill').style.width = Math.min(100,alertsToday*10)+'%';
+  document.getElementById('scoreDisp').textContent = safetyScore;
+  document.getElementById('sessScore').textContent = safetyScore;
+  document.getElementById('scoreFill').style.width = safetyScore+'%';
+  document.getElementById('scoreFill').style.background = safetyScore<60?'#e03030':safetyScore<80?'#eab308':'#22c55e';
+
+  // Chips
+  const eyeC = document.getElementById('eyeChip');
+  eyeC.textContent = ear===null?'👁 Eyes —':ear<S.earThreshold?'👁 Eyes Closed':'👁 Eyes Open';
+  eyeC.className = 'chip'+(ear!==null&&ear<S.earThreshold?' red':'');
+
+  const yawnC = document.getElementById('yawnChip');
+  yawnC.textContent = mar===null?'😐 Mouth —':mar>S.marThreshold?'😮 Yawning':'😐 Mouth Closed';
+  yawnC.className = 'chip'+(mar!==null&&mar>S.marThreshold?' yel':'');
+
+  const spdC = document.getElementById('speedChip');
+  spdC.textContent = spd>0?`🚗 ${Math.round(spd)} km/h`:'📍 GPS —';
+  spdC.className = 'chip'+(spd>S.speedLimit?' red':spd>0?' grn':'');
+
+  // Status pill
+  let pillHTML='';
+  if(!running) pillHTML='<span class="pill idle"><span class="dot"></span>Stopped</span>';
+  else if(ear!==null&&ear<S.earThreshold) pillHTML='<span class="pill danger"><span class="dot"></span>DROWSY</span>';
+  else if(mar!==null&&mar>S.marThreshold) pillHTML='<span class="pill warn"><span class="dot"></span>Yawning</span>';
+  else if(ear!==null) pillHTML='<span class="pill safe"><span class="dot"></span>Alert</span>';
+  else pillHTML='<span class="pill idle"><span class="dot"></span>No Face</span>';
+  document.getElementById('statusPill').innerHTML=pillHTML;
+
+  // Yawn count
+  document.getElementById('yawnCount').textContent = yawnsToday;
+
+  // EAR history for chart
+  if(ear!==null){
+    earHistory.shift();
+    earHistory.push(ear);
+    if(earChartInst){ earChartInst.data.datasets[0].data=[...earHistory]; earChartInst.update('none'); }
+  }
+
+  // Profile stats
+  document.getElementById('profScore').textContent = safetyScore;
+  document.getElementById('profYawns').textContent = totalYawns;
+  if(speedSamples.length>0){
+    const avg=speedSamples.reduce((a,b)=>a+b,0)/speedSamples.length;
+    document.getElementById('avgSpdDisp').textContent=avg.toFixed(1)+' km/h';
+    document.getElementById('maxSpdDisp').textContent=maxSpeed.toFixed(1)+' km/h';
+  }
+  document.getElementById('totalAlertsDisp').textContent=totalAlerts+alertsToday;
+}
+
+// ══════════════════════════════════════════
+//  SESSION TIMER
+// ══════════════════════════════════════════
+let sessInterval=null;
+function startSessionTimer(){
+  sessionStart=Date.now();
+  sessInterval=setInterval(()=>{
+    const s=Math.floor((Date.now()-sessionStart)/1000);
+    const m=Math.floor(s/60), sec=s%60;
+    document.getElementById('sessTime').textContent=String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');
+  },1000);
+}
+function stopSessionTimer(){
+  if(sessInterval){ clearInterval(sessInterval); sessInterval=null; }
+}
+
+// ══════════════════════════════════════════
+//  TOGGLE DETECTION
+// ══════════════════════════════════════════
+async function toggleDetection(){
+  if(!running){
+    await startDetection();
+  } else {
+    stopDetection();
+  }
+}
+
+async function startDetection(){
+  const btn = document.getElementById('startBtn');
+  btn.textContent='Starting...';
+  btn.disabled=true;
+
+  try{
+    // Get camera
+    const constraints = {
+      video:{ facingMode: S.camera, width:{ideal:640}, height:{ideal:480} },
+      audio:false
+    };
+    videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+    const vid = document.getElementById('video');
+    vid.srcObject = videoStream;
+    await new Promise(r=>vid.onloadedmetadata=r);
+
+    // Init MediaPipe FaceMesh
+    faceMesh = new FaceMesh({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`});
+    faceMesh.setOptions({
+      maxNumFaces:1,
+      refineLandmarks:true,
+      minDetectionConfidence:0.5,
+      minTrackingConfidence:0.5
+    });
+    faceMesh.onResults(onResults);
+
+    // Camera utils — feeds frames to FaceMesh
+    camera = new Camera(vid,{
+      onFrame: async()=>{ if(running) await faceMesh.send({image:vid}); },
+      width:640, height:480
+    });
+    await camera.start();
+
+    running=true;
+    sessionCount++;
+    document.getElementById('profTrips').textContent=sessionCount;
+    startSessionTimer();
+    startGPS();
+
+    btn.textContent='STOP MONITORING';
+    btn.className='startbtn stop';
+    btn.disabled=false;
+
+  } catch(e){
+    btn.textContent='START MONITORING';
+    btn.className='startbtn start';
+    btn.disabled=false;
+    alert('Camera error: '+e.message+'\n\nMake sure you allow camera permission.');
+  }
+}
+
+function stopDetection(){
+  running=false;
+  if(camera){ camera.stop(); camera=null; }
+  if(videoStream){ videoStream.getTracks().forEach(t=>t.stop()); videoStream=null; }
+  if(faceMesh){ faceMesh.close(); faceMesh=null; }
+  stopAlarm();
+  stopSessionTimer();
+  stopGPS();
+
+  document.getElementById('alertBanner').classList.remove('on');
+  document.getElementById('hudAlert').classList.remove('on');
+  document.getElementById('statusPill').innerHTML='<span class="pill idle"><span class="dot"></span>Stopped</span>';
+  document.getElementById('startBtn').textContent='START MONITORING';
+  document.getElementById('startBtn').className='startbtn start';
+
+  // Save session stats
+  totalAlerts += alertsToday;
+  alertsToday=0; yawnsToday=0; safetyScore=100;
+  speedSamples=[]; speedAlerted=false; currentSpeed=0;
+  eyeClosedStart=null; yawnStart=null; emergencyCalled=false;
+
+  if(sessionCount>0){
+    document.getElementById('streakText').textContent=`${sessionCount} Session${sessionCount>1?'s':''} Completed!`;
+    document.getElementById('streakSub').textContent='Keep monitoring every drive';
+  }
+}
+
+// ══════════════════════════════════════════
+//  SETTINGS SLIDERS
+// ══════════════════════════════════════════
+function setSetting(el, id){
+  const v=parseInt(el.value);
+  if(id==='earT'){ S.earThreshold=v/100; document.getElementById('earTD').textContent='0.'+String(v).padStart(2,'0'); }
+  if(id==='marT'){ S.marThreshold=v/100; document.getElementById('marTD').textContent='0.'+String(v).padStart(2,'0'); }
+  if(id==='drowsyT'){ S.drowsySecs=v; document.getElementById('drowsyD').textContent=v+'s'; }
+  if(id==='yawnT'){ S.yawnSecs=v; document.getElementById('yawnD').textContent=v+'s'; }
+  if(id==='spdL'){ S.speedLimit=v; document.getElementById('spdLD').textContent=v+' km/h'; }
+  saveSettings();
+}
+
+function saveSettings(){
+  S.alarmEnabled  = document.getElementById('tAlarm').classList.contains('on');
+  S.vibeEnabled   = document.getElementById('tVibe').classList.contains('on');
+  S.flashEnabled  = document.getElementById('tFlash').classList.contains('on');
+  S.emCallEnabled = document.getElementById('tEmCall').classList.contains('on');
+  S.emName   = document.getElementById('emName').value;
+  S.emPhone  = document.getElementById('emPhone').value;
+  S.twSID    = document.getElementById('twSID').value;
+  S.twToken  = document.getElementById('twToken').value;
+  S.twFrom   = document.getElementById('twFrom').value;
+  S.camera   = document.getElementById('camSel').value;
+  document.getElementById('emNameDisp').textContent  = S.emName  || 'Not set';
+  document.getElementById('emPhoneDisp').textContent = S.emPhone || 'Not set';
+  try{ localStorage.setItem('gd_settings', JSON.stringify(S)); }catch(_){}
+}
+
+function loadSettings(){
+  try{
+    const saved = JSON.parse(localStorage.getItem('gd_settings')||'null');
+    if(!saved) return;
+    Object.assign(S, saved);
+    document.getElementById('earT').value      = Math.round(S.earThreshold*100);
+    document.getElementById('marT').value      = Math.round(S.marThreshold*100);
+    document.getElementById('drowsyT').value   = S.drowsySecs;
+    document.getElementById('yawnT').value     = S.yawnSecs;
+    document.getElementById('spdL').value      = S.speedLimit;
+    document.getElementById('earTD').textContent  = S.earThreshold.toFixed(2);
+    document.getElementById('marTD').textContent  = S.marThreshold.toFixed(2);
+    document.getElementById('drowsyD').textContent= S.drowsySecs+'s';
+    document.getElementById('yawnD').textContent  = S.yawnSecs+'s';
+    document.getElementById('spdLD').textContent  = S.speedLimit+' km/h';
+    if(!S.alarmEnabled)  document.getElementById('tAlarm').classList.remove('on');
+    if(!S.vibeEnabled)   document.getElementById('tVibe').classList.remove('on');
+    if(!S.flashEnabled)  document.getElementById('tFlash').classList.remove('on');
+    if(S.emCallEnabled)  document.getElementById('tEmCall').classList.add('on');
+    document.getElementById('emName').value   = S.emName||'';
+    document.getElementById('emPhone').value  = S.emPhone||'';
+    document.getElementById('twSID').value    = S.twSID||'';
+    document.getElementById('twToken').value  = S.twToken||'';
+    document.getElementById('twFrom').value   = S.twFrom||'';
+    document.getElementById('camSel').value   = S.camera||'user';
+    document.getElementById('emNameDisp').textContent  = S.emName||'Not set';
+    document.getElementById('emPhoneDisp').textContent = S.emPhone||'Not set';
+  }catch(_){}
+}
+
+// ══════════════════════════════════════════
+//  LOGS
+// ══════════════════════════════════════════
+function filterLogs(type, el){
+  logFilter=type;
+  document.querySelectorAll('#filterRow .fc').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  renderLogs();
+}
+
+function renderLogs(){
+  const filtered = logFilter==='all'?logs:logs.filter(l=>l.type===logFilter);
+  document.getElementById('logCount').textContent=filtered.length+' events';
+  const COL={'DROWSINESS':'#e03030','YAWN':'#eab308','SPEED':'#e07020','EMERGENCY_CALL':'#3b82f6','EMERGENCY_PLACEHOLDER':'#3b82f6','EMERGENCY_CALL_ERROR':'#ff4444'};
+  const LAB={'DROWSINESS':'DROWSY','YAWN':'YAWN','SPEED':'SPEED','EMERGENCY_CALL':'CALL','EMERGENCY_PLACEHOLDER':'CALL','EMERGENCY_CALL_ERROR':'ERR'};
+  const TITLE={'DROWSINESS':'Drowsiness Detected','YAWN':'Yawn Detected','SPEED':'Speed Exceeded','EMERGENCY_CALL':'Emergency Called','EMERGENCY_PLACEHOLDER':'Emergency (demo)','EMERGENCY_CALL_ERROR':'Call Failed'};
+  if(!filtered.length){
+    document.getElementById('logList').innerHTML='<div style="color:var(--text2);font-size:12px;text-align:center;padding:18px 0">No events yet</div>';
+    return;
+  }
+  document.getElementById('logList').innerHTML=filtered.map(l=>{
+    const c=COL[l.type]||'#8892a0';
+    return `<div class="logitem">
+      <div class="ldot" style="background:${c}"></div>
+      <div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="ltype">${TITLE[l.type]||l.type}</div>
+          <div class="ltag" style="background:${c}18;color:${c}">${LAB[l.type]||l.type}</div>
+        </div>
+        <div class="lmeta">${l.time} · ${l.details}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+//  CHARTS
+// ══════════════════════════════════════════
+let earChartInst=null;
+window.addEventListener('load',()=>{
+  // EAR trend
+  const c1=document.getElementById('earChart').getContext('2d');
+  earChartInst=new Chart(c1,{
+    type:'line',
+    data:{
+      labels:Array.from({length:50},(_,i)=>i),
+      datasets:[{
+        data:[...earHistory],
+        borderColor:'#e03030',borderWidth:1.8,
+        pointRadius:0,fill:true,
+        backgroundColor:'rgba(224,48,48,0.06)',
+        tension:0.35,spanGaps:false
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{enabled:false}},
+      scales:{x:{display:false},y:{display:false,min:0,max:1}},
+      animation:false}
+  });
+
+  // Weekly bar
+  const c2=document.getElementById('weekChart').getContext('2d');
+  new Chart(c2,{
+    type:'bar',
+    data:{
+      labels:['M','T','W','T','F','S','S'],
+      datasets:[{data:[88,92,79,95,91,87,100],backgroundColor:'rgba(224,112,32,0.65)',borderRadius:4,borderSkipped:false}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#4a5568',font:{size:10}},grid:{display:false},border:{display:false}},
+              y:{display:false,min:60,max:100}}}
+  });
+
+  // Init
+  loadSettings();
+  renderLogs();
+  applyProfile();
+  document.getElementById('notifBadge').textContent=logs.length||0;
+  if(logs.length) document.getElementById('notifBadge').classList.add('on');
+});
+
+// ══════════════════════════════════════════
+//  PAGE NAVIGATION
+// ══════════════════════════════════════════
+function goPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.bn').forEach(n=>n.classList.remove('on'));
+  document.getElementById('pg-'+id).classList.add('on');
+  document.getElementById('nav-'+id).classList.add('on');
+}
+
+// ══════════════════════════════════════════
+//  PROFILE DATA + EDIT MODAL
+// ══════════════════════════════════════════
+const defaultProfile = {
+  name: 'Shriyaansh Shukla',
+  driverId: 'GD-2025-0821',
+  carModel: 'Maruti Swift VXI',
+  carYear: '2022',
+  carReg: 'HP 00 AA 0000',
+  aadhar: '',
+  photo: '',
+};
+let profile = Object.assign({}, defaultProfile,
+  JSON.parse(localStorage.getItem('gd_profile') || '{}')
+);
+
+function saveProfile(){
+  localStorage.setItem('gd_profile', JSON.stringify(profile));
+}
+
+function applyProfile(){
+  const initials = profile.name.trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2) || 'SS';
+
+  // Profile avatar — photo or initials
+  const img = document.getElementById('profAvatarImg');
+  const ini = document.getElementById('profAvatarInitials');
+  const topAv = document.getElementById('topAvatar');
+  if(profile.photo){
+    img.src = profile.photo;
+    img.style.display = 'block';
+    ini.style.display = 'none';
+    topAv.style.backgroundImage = `url(${profile.photo})`;
+    topAv.style.backgroundSize = 'cover';
+    topAv.style.backgroundPosition = 'center';
+    topAv.textContent = '';
+  } else {
+    img.style.display = 'none';
+    ini.style.display = '';
+    ini.textContent = initials;
+    topAv.style.backgroundImage = '';
+    topAv.textContent = initials;
+  }
+
+  document.getElementById('profName').textContent  = profile.name;
+  document.getElementById('profId').textContent    = 'Driver ID: ' + profile.driverId;
+  document.getElementById('carModel').textContent  = profile.carModel;
+  document.getElementById('carYear').textContent   = profile.carYear;
+  document.getElementById('carReg').textContent    = profile.carReg;
+
+  // Aadhaar — mask all but last 4 digits
+  const ad = profile.aadhar.replace(/\D/g,'');
+  document.getElementById('aadharDisp').textContent = ad.length===12
+    ? 'XXXX XXXX ' + ad.slice(8)
+    : (ad ? ad : 'Not set');
+}
+
+function openEditModal(){
+  document.getElementById('ep_name').value     = profile.name;
+  document.getElementById('ep_driverId').value = profile.driverId;
+  document.getElementById('ep_carModel').value = profile.carModel;
+  document.getElementById('ep_carYear').value  = profile.carYear;
+  document.getElementById('ep_carReg').value   = profile.carReg;
+  document.getElementById('ep_aadhar').value   = profile.aadhar;
+  updateAvatarPreview(profile.name);
+  // show existing photo in modal preview if set
+  const prev = document.getElementById('ep_avatar');
+  if(profile.photo){
+    prev.style.backgroundImage = `url(${profile.photo})`;
+    prev.style.backgroundSize = 'cover';
+    prev.style.backgroundPosition = 'center';
+    prev.textContent = '';
+  } else {
+    prev.style.backgroundImage = '';
+  }
+  document.getElementById('editModal').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeEditModal(){
+  document.getElementById('editModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function saveEditModal(){
+  profile.name     = document.getElementById('ep_name').value.trim()     || profile.name;
+  profile.driverId = document.getElementById('ep_driverId').value.trim() || profile.driverId;
+  profile.carModel = document.getElementById('ep_carModel').value.trim() || profile.carModel;
+  profile.carYear  = document.getElementById('ep_carYear').value.trim()  || profile.carYear;
+  profile.carReg   = document.getElementById('ep_carReg').value.trim()   || profile.carReg;
+  profile.aadhar   = document.getElementById('ep_aadhar').value.replace(/\D/g,'').slice(0,12);
+  // photo already saved into profile.photo by handlePhotoUpload()
+  saveProfile();
+  applyProfile();
+  closeEditModal();
+}
+
+// ══════════════════════════════════════════
+//  SERVICE WORKER (offline PWA support)
+// ══════════════════════════════════════════
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log('[GuardDrive] Service worker registered'))
+      .catch(e => console.warn('[GuardDrive] SW error:', e));
+  });
+}
+</script>
+<!-- ══ EDIT PROFILE MODAL ══ -->
+<div id="editModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);overflow-y:auto;padding:20px 14px 40px">
+  <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);max-width:400px;margin:0 auto;padding:20px">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div style="font-family:var(--font);font-size:19px;font-weight:700;letter-spacing:.4px">Edit Profile</div>
+      <div onclick="closeEditModal()" style="cursor:pointer;width:30px;height:30px;border-radius:8px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text2)">✕</div>
+    </div>
+
+    <!-- Avatar / photo upload -->
+    <div style="display:flex;justify-content:center;margin-bottom:18px">
+      <div style="position:relative;cursor:pointer" onclick="document.getElementById('photoInput').click()">
+        <div id="ep_avatar" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--orange));display:flex;align-items:center;justify-content:center;font-family:var(--font);font-size:30px;font-weight:700;color:#fff;border:3px solid var(--border2);overflow:hidden">SS</div>
+        <div style="position:absolute;bottom:0;right:0;width:26px;height:26px;border-radius:50%;background:var(--orange2);display:flex;align-items:center;justify-content:center;border:2px solid var(--bg3)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+      </div>
+      <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(this)"/>
+    </div>
+    <div style="text-align:center;font-size:11px;color:var(--text2);margin-top:-10px;margin-bottom:16px">Tap photo to change</div>
+
+    <!-- Fields -->
+    <div style="display:flex;flex-direction:column;gap:14px">
+
+      <div>
+        <div class="shdr">Full Name</div>
+        <input type="text" id="ep_name" placeholder="Your full name"
+          oninput="updateAvatarPreview(this.value)"
+          style="background:var(--bg4);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:10px 12px;font-size:14px;outline:none;width:100%;font-family:var(--body);margin-top:5px"/>
+      </div>
+
+      <div>
+        <div class="shdr">Driver ID</div>
+        <input type="text" id="ep_driverId" placeholder="e.g. GD-2025-0821"
+          style="background:var(--bg4);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:10px 12px;font-size:14px;outline:none;width:100%;font-family:var(--body);margin-top:5px"/>
+      </div>
+
+      <div>
+        <div class="shdr">Aadhaar Number</div>
+        <input type="text" id="ep_aadhar" placeholder="12-digit Aadhaar number" maxlength="14"
+          oninput="formatAadhar(this)"
+          style="background:var(--bg4);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:10px 12px;font-size:14px;outline:none;width:100%;font-family:var(--body);margin-top:5px;letter-spacing:1px"/>
+        <div style="font-size:10px;color:var(--text2);margin-top:4px">Stored privately on your device only. Displayed as XXXX XXXX XXXX.</div>
+      </div>
+
+      <div style="height:1px;background:var(--border);margin:2px 0"></div>
+      <div style="font-family:var(--font);font-size:13px;font-weight:600;color:var(--text2);letter-spacing:.8px;text-transform:uppercase">Car Details</div>
+
+      <div>
+        <div class="shdr">Make &amp; Model</div>
+        <input type="text" id="ep_carModel" placeholder="e.g. Maruti Swift VXI"
+          style="background:var(--bg4);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:10px 12px;font-size:14px;outline:none;width:100%;font-family:var(--body);margin-top:5px"/>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div class="shdr">Year</div>
+          <input type="text" id="ep_carYear" placeholder="e.g. 2022"
+            style="background:var(--bg4);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:10px 12px;font-size:14px;outline:none;width:100%;font-family:var(--body);margin-top:5px"/>
+        </div>
+        <div>
+          <div class="shdr">Reg. Number</div>
+          <input type="text" id="ep_carReg" placeholder="e.g. HP 00 AA 0000"
+            style="background:var(--bg4);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:10px 12px;font-size:14px;outline:none;width:100%;font-family:var(--body);margin-top:5px"/>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Actions -->
+    <div style="display:flex;gap:10px;margin-top:22px">
+      <button onclick="closeEditModal()"
+        style="flex:1;padding:12px;border:1px solid var(--border2);background:var(--bg4);color:var(--text2);border-radius:var(--rs);font-family:var(--font);font-size:15px;font-weight:600;cursor:pointer">
+        CANCEL
+      </button>
+      <button onclick="saveEditModal()"
+        style="flex:2;padding:12px;border:none;background:linear-gradient(135deg,var(--red),var(--orange));color:#fff;border-radius:var(--rs);font-family:var(--font);font-size:15px;font-weight:700;letter-spacing:.5px;cursor:pointer">
+        SAVE PROFILE
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<style>
+#editModal input:focus{border-color:var(--orange2)!important;outline:none}
+</style>
+
+<script>
+function updateAvatarPreview(name){
+  const initials = (name||'').trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2) || '?';
+  const prev = document.getElementById('ep_avatar');
+  if(!profile.photo){
+    prev.textContent = initials;
+  }
+}
+
+function handlePhotoUpload(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const dataUrl = e.target.result;
+    profile.photo = dataUrl;
+    // update modal preview
+    const prev = document.getElementById('ep_avatar');
+    prev.style.backgroundImage = `url(${dataUrl})`;
+    prev.style.backgroundSize = 'cover';
+    prev.style.backgroundPosition = 'center';
+    prev.textContent = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+function formatAadhar(input){
+  // keep digits only, group as XXXX XXXX XXXX
+  let digits = input.value.replace(/\D/g,'').slice(0,12);
+  let formatted = digits.match(/.{1,4}/g)?.join(' ') || digits;
+  input.value = formatted;
+}
+
+document.getElementById('editModal').addEventListener('click', function(e){
+  if(e.target === this) closeEditModal();
+});
+</script>
+
+</body>
+</html>
