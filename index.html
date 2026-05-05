@@ -479,6 +479,7 @@ let sessionStart = null;
 let eyeClosedStart = null;
 let yawnStart = null;
 let emergencyCalled = false;
+let sosCalled = false;
 let alarmPlaying = false;
 let alertsToday = 0;
 let yawnsToday = 0;
@@ -628,10 +629,9 @@ function flashScreen(){
 }
 
 // ══════════════════════════════════════════
-//  EMERGENCY CALL — instant auto-call
-//  Directly fires tel: — opens dialer and
-//  on Android calls automatically.
-//  Your phone, your SIM, no tap needed.
+//  EMERGENCY CALL — auto-call without
+//  stopping the app. Uses window.open so
+//  the dialer opens without navigating away.
 // ══════════════════════════════════════════
 function triggerEmergencyCall(reason){
   if(!S.emCallEnabled || !S.emPhone){
@@ -641,7 +641,7 @@ function triggerEmergencyCall(reason){
   const number = S.emPhone.replace(/\s/g,'');
   addLog('EMERGENCY_CALL', `Auto-calling ${S.emName||number} — ${reason}`);
 
-  // Show brief toast notification
+  // Toast notification — app stays running
   const toast = document.createElement('div');
   toast.style.cssText=`
     position:fixed;top:80px;left:50%;transform:translateX(-50%);
@@ -653,8 +653,8 @@ function triggerEmergencyCall(reason){
   document.body.appendChild(toast);
   setTimeout(()=>toast.remove(), 4000);
 
-  // Auto-call immediately — no tap needed
-  window.location.href = `tel:${number}`;
+  // window.open keeps the app alive — dialer opens separately
+  window.open(`tel:${number}`, '_blank');
 }
 
 // ══════════════════════════════════════════
@@ -727,30 +727,30 @@ function onResults(results){
     const closed = now - eyeClosedStart;
 
     if(closed >= S.drowsySecs){
-      state["drowsy_alert"] = true;
       startAlarm();
       document.getElementById('alertBanner').classList.add('on');
       document.getElementById('alertSub').textContent=`Eyes closed ${closed.toFixed(1)}s — stay alert!`;
       document.getElementById('hudAlert').classList.add('on');
-      if(!emergencyCalled && S.emCallEnabled && closed >= S.sosSecs){
+
+      // Log drowsiness once when alarm first triggers
+      if(!emergencyCalled){
         emergencyCalled = true;
         alertsToday++;
         safetyScore = Math.max(0, safetyScore-10);
         addLog('DROWSINESS', `Eyes closed ${closed.toFixed(1)}s, EAR=${ear.toFixed(2)}`);
+      }
+
+      // SOS call fires on its own separate timer — completely independent
+      if(S.emCallEnabled && !sosCalled && closed >= S.sosSecs){
+        sosCalled = true;
         triggerEmergencyCall(`Eyes closed for ${closed.toFixed(1)} seconds.`);
-      } else if(!emergencyCalled && closed >= S.drowsySecs && !S.emCallEnabled){
-        // log drowsiness even if call disabled
-        if(closed >= S.drowsySecs && alertsToday === 0 || closed - S.drowsySecs < 0.9){
-          alertsToday++;
-          safetyScore = Math.max(0, safetyScore-10);
-          addLog('DROWSINESS', `Eyes closed ${closed.toFixed(1)}s, EAR=${ear.toFixed(2)}`);
-        }
       }
     }
     document.getElementById('closedTimer').textContent=`Closed: ${(now-eyeClosedStart).toFixed(1)}s`;
   } else {
     eyeClosedStart = null;
     emergencyCalled = false;
+    sosCalled = false;
     stopAlarm();
     document.getElementById('alertBanner').classList.remove('on');
     document.getElementById('hudAlert').classList.remove('on');
@@ -949,7 +949,7 @@ function stopDetection(){
   totalAlerts += alertsToday;
   alertsToday=0; yawnsToday=0; safetyScore=100;
   speedSamples=[]; speedAlerted=false; currentSpeed=0;
-  eyeClosedStart=null; yawnStart=null; emergencyCalled=false;
+  eyeClosedStart=null; yawnStart=null; emergencyCalled=false; sosCalled=false;
 
   if(sessionCount>0){
     document.getElementById('streakText').textContent=`${sessionCount} Session${sessionCount>1?'s':''} Completed!`;
